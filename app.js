@@ -1,11 +1,7 @@
 /**
- * This is going to build over the Instagram's public API.
- *
- * Instagram currently allows accessing public posts but misses
- * a lot of functionality like limits, pagination, jsonp, etc.
- * This aims to fix that.
- *
- * @author me@nishantarora.in (Nishant Arora)
+ * This creates a reverse proxy to serve Google Places API
+ * data with JSONP and CORS.
+ * *
  */
 
 'use strict';
@@ -89,7 +85,7 @@ PlacesProxy.reconstructJSON = function (request, json) {
  * @param {object} response
  * @param {object} json
  */
-PlacesProxy.handleInstagramJSON = function (request, response, json) {
+PlacesProxy.handlePlacesJSON = function (request, response, json) {
   response.jsonp(this.reconstructJSON(request, json));
 };
 
@@ -99,7 +95,7 @@ PlacesProxy.handleInstagramJSON = function (request, response, json) {
  * @param {object} response
  * @return {function} callback
  */
-PlacesProxy.buildInstagramHandlerCallback = function (request, response) {
+PlacesProxy.buildPlacesHandlerCallback = function (request, response) {
   return function (serverResponse) {
     serverResponse.setEncoding('utf8');
     let body = '';
@@ -109,7 +105,7 @@ PlacesProxy.buildInstagramHandlerCallback = function (request, response) {
     serverResponse.on('end', function () {
       try {
         let json = JSON.parse(body);
-        this.handleInstagramJSON(request, response, json);
+        this.handlePlacesJSON(request, response, json);
       } catch (error) {
         response.status(404).send('Invalid Query').end();
       }
@@ -118,37 +114,35 @@ PlacesProxy.buildInstagramHandlerCallback = function (request, response) {
 };
 
 /**
- * Fetches content from Instagram API.
+ * Fetches content from Places API.
  * @param {string} user
  * @param {object} request
  * @param {object} response
  */
-PlacesProxy.fetchFromInstagram = function (request, response) {
+PlacesProxy.fetchFromPlaces = function (request, response) {
   let q = request.query;
   //let query = '/maps/api/place/details/json?placeid='+q.placeid+'&key='+q.key;
   //console.log('query: ', query)
-  let GPurl = 'https://maps.googleapis.com/maps/api/place/details/json?placeid=ChIJfVh-SUt4IocR4lnxaXRFbhM&key=AIzaSyCtfewauyt90_uL-_aDPTTmXNVqs0QiEiY';
+  let URL = 'https://maps.googleapis.com/maps/api/place/details/json?placeid='+q.placeid+'&key='+q.key;
+  console.log('URL: ', URL)
   /*https.get(
     this.constructURL(
       'https', 'maps.googleapis.com', '/maps/api/place/details/', 'json?placeid='+q.placeid+'&key='+q.key),
-    this.buildInstagramHandlerCallback(request, response).bind(this));
+    this.buildPlacesHandlerCallback(request, response).bind(this));
     */
   https.get(
-    this.constructURL(GPurl),
-    this.buildInstagramHandlerCallback(request, response).bind(this));
+    URL,
+    this.buildPlacesHandlerCallback(request, response).bind(this));
 };
 
 /**
- * Processing User Request. This works the same way as instagram API.
+ * Processing User Request. This works the same way as Places API.
  * @param {object} request
  * @param {object} response
  */
 PlacesProxy.processRequest = function (request, response) {
-  let q = request.query
-  this.log('Request query: '+ q.key)
   this.log('Processing Request: ' + JSON.stringify(request.query));
-  //this.log('key')
-  this.fetchFromInstagram(request, response);
+  this.fetchFromPlaces(request, response);
 };
 
 /**
@@ -166,7 +160,7 @@ PlacesProxy.noContent = function (request, response) {
  * @param {object} response
  */
 PlacesProxy.sendToRepo = function (request, response) {
-  response.redirect('https://github.com/whizzzkid/instagram-reverse-proxy');
+  response.redirect('https://github.com/whizzzkid/Places-reverse-proxy');
 };
 
 
