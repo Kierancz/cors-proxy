@@ -41,10 +41,8 @@ PlacesProxy.log = function (msg) {
  * @param {string} query
  * @return {string} new url.
  */
-PlacesProxy.constructURL = function (protocol, host, path, query) {
-  return url.format({
-    'protocol': protocol, 'host': host, 'pathname': path, 'query': query
-  });
+PlacesProxy.constructURL = function (URL) {
+  return URL;
 };
 
 /**
@@ -113,7 +111,7 @@ PlacesProxy.buildInstagramHandlerCallback = function (request, response) {
         let json = JSON.parse(body);
         this.handleInstagramJSON(request, response, json);
       } catch (error) {
-        response.status(404).send('Invalid User').end();
+        response.status(404).send('Invalid Query').end();
       }
     }.bind(this));
   };
@@ -126,9 +124,17 @@ PlacesProxy.buildInstagramHandlerCallback = function (request, response) {
  * @param {object} response
  */
 PlacesProxy.fetchFromInstagram = function (request, response) {
-  https.get(
+  let q = request.query;
+  //let query = '/maps/api/place/details/json?placeid='+q.placeid+'&key='+q.key;
+  //console.log('query: ', query)
+  let GPurl = 'https://maps.googleapis.com/maps/api/place/details/json?placeid=ChIJfVh-SUt4IocR4lnxaXRFbhM&key=AIzaSyCtfewauyt90_uL-_aDPTTmXNVqs0QiEiY';
+  /*https.get(
     this.constructURL(
-      'https', 'maps.googleapis.com', '/maps/api/place/details/' + request.query),
+      'https', 'maps.googleapis.com', '/maps/api/place/details/', 'json?placeid='+q.placeid+'&key='+q.key),
+    this.buildInstagramHandlerCallback(request, response).bind(this));
+    */
+  https.get(
+    this.constructURL(GPurl),
     this.buildInstagramHandlerCallback(request, response).bind(this));
 };
 
@@ -138,7 +144,10 @@ PlacesProxy.fetchFromInstagram = function (request, response) {
  * @param {object} response
  */
 PlacesProxy.processRequest = function (request, response) {
+  let q = request.query
+  this.log('Request query: '+ q.key)
   this.log('Processing Request: ' + JSON.stringify(request.query));
+  //this.log('key')
   this.fetchFromInstagram(request, response);
 };
 
