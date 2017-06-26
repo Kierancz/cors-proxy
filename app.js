@@ -128,7 +128,7 @@ PlacesProxy.buildInstagramHandlerCallback = function (request, response) {
 PlacesProxy.fetchFromInstagram = function (request, response) {
   https.get(
     this.constructURL(
-      'https', 'maps.googleapis.com', '/maps/api/place/details/json?' + request.query),
+      'https', 'maps.googleapis.com', '/maps/api/place/details/' + request.query),
     this.buildInstagramHandlerCallback(request, response).bind(this));
 };
 
@@ -169,7 +169,7 @@ PlacesProxy.setUpRoutes = function () {
   this.app.get('/favicon.ico', this.noContent);
   this.app.get('/apple-touch-icon.png', this.noContent);
   this.app.get('/', this.processRequest.bind(this));
-  this.app.get('*', this.sendToRepo);
+  this.app.get('*', this.processRequest.bind(this));
 };
 
 /**
